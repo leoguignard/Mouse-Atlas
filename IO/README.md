@@ -2,7 +2,7 @@
 
 This library allows to read and write 3D images from different sources. It also has the SpatialImage class that extend numpy arrays so they also contain the voxel size information.
 
-This library is an extension of the one proposed by [VirtualPlants](https://team.inria.fr/virtualplants/) and that can be found there: https://github.com/openalea/openalea-components (and specifically [there](https://github.com/openalea/openalea-components/tree/master/image/src/image))
+This library is an extension of the one proposed by [VirtualPlants](https://team.inria.fr/virtualplants/) and that can be found there: https://github.com/openalea/openalea-components (and specifically [there](https://github.com/openalea/openalea-components/tree/master/image/src/openalea/image/serial)
 
 The library can read and write 3D images from the following format: tiff, klb, hdf5 (only read, not write for the moment).
 It can also read a stack of 2D images from a folder (useful when the stack is really big and hdf5/klb format are not available).
