@@ -27,7 +27,7 @@ Some dependecies are requiered:
     - pyklb (https://github.com/bhoeckendorf/pyklb)
     - pylibtiff (https://github.com/pearu/pylibtiff)
 
-Note that all the dependecies but pyklb will be installed automatically with the setup.py
+Note that all the dependecies but pyklb will be installed automatically with the setup.py (therefore you need to manually install pyklb correctly in order to read/write klb images).
     
 ## Quick install
 To quickly install the script so it can be call from the terminal and install too the common dependecies one can run
