@@ -1,0 +1,6 @@
+[submodule "svf2MaMuT"]
+	path = svf2MaMuT
+	url = git@github.com:leoguignard/svf2MaMuT.git
+[submodule "I2AE"]
+	path = I2AE
+	url = git@github.com:leoguignard/I2AE.git
