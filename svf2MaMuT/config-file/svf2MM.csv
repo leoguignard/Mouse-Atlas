@@ -1,0 +1,15 @@
+path_to_SVF,/media/X/SV1/14-05-21/Propagation/SVF.bin
+path_to_DB,/media/X/SV1/14-05-21/Propagation/Database.csv
+path_output,/media/X/SV1/14-05-21/Propagation/MaMuT/14-05-21.xml
+tissue_ids,0
+,1
+,2
+tissue_names,Heart
+,Left Ant Parax
+,Left LP
+filename,Shifted.xml
+folder,X:\SV1\14-05-21\ParameterSweep2
+begin,11
+end,521
+v_size,0.40625
+dT,5
