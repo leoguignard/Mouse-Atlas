@@ -108,7 +108,9 @@ def main():
                 output.write(inframe_template.format(frame=t))
                 for c in cells:
                     output.write(spot_template.format(id=c, name=c, frame=t, t_id=tracking_value[c],
-                                                      x=SVF.pos[c][0], y=SVF.pos[c][1], z=SVF.pos[c][2],
+                                                      x=SVF.pos[c][0]*v_size,
+                                                      y=SVF.pos[c][1]*v_size,
+                                                      z=SVF.pos[c][2]*v_size,
                                                       # t_name=t_id_2_N.get(tracking_value[c], '?')
                                                       ))
                 output.write(inframe_end_template)
