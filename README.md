@@ -11,6 +11,8 @@ Folders:
   - SVF: The scripts SVF-prop.py and tissue-bw-prop.py
   - TARDIS: The script TARDIS.py
   - Time-registration: The standalone-registration.py
+  - I2AE: The script that allows to register an intensity image onto our average embryo
+  - svf2MaMuT: The script that allows to write an SVF output onto a MaMuT interpretable xml file.
 
 ## Basic usage
 See the specific README of each folder to have more information.
