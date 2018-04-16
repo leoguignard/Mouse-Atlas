@@ -1,4 +1,4 @@
-path_to_xml,/media/X/SV1/14-05-21/ParameterSweep2/TGMM_CV2/SelectParameterScreen/FinalScreen/ECC9_CV3.1/GMEMtracking3D_2016_12_1_17_46_22/XML_finalResult_lht/,Path to the TGMM xmls
-path_out,/media/X/SV1/14-05-21/Propagation/,path to the resulting propagation folder
+path_to_xml,/path/to/TGMM/xmls/,Path to the TGMM xmls
+path_out,/path/toPropagation/,path to the resulting propagation folder
 anisotropy,5,aspect ratio of the image
-path_bin_TGMM,/media/X/SV1/14-05-21/Propagation/TGMM_clean.bin,Path to the TGMM binary output (if it already exists it will read that instead of the xmls)
+path_bin_TGMM,/path/to/TGMM.bin,Path to the TGMM binary output (if it already exists it will read that instead of the xmls)

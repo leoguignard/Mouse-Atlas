@@ -560,7 +560,10 @@ def read_param_file():
                 param_dict[param_name] = split_line[1].strip()
                 i += 1
             if param_name == 'anisotropy' or 'time' in param_name:
-                param_dict[param_name] = int(split_line[1])
+                if split_line[1].isdigit():
+                    param_dict[param_name] += int(split_line[1])
+                else:
+                    param_dict[param_name] += float(split_line[1])
         path_to_xml = param_dict.get('path_to_xml', '.')
         path_out = param_dict.get('path_out', '.')
         anisotropy = param_dict.get('anisotropy', 1)

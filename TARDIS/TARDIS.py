@@ -11,19 +11,15 @@ import re
 import sys
 import os
 from TGMMlibraries import lineageTree
-import sys
 from time import time
 import struct
 from multiprocessing import Pool
 from itertools import combinations
 import xml.etree.ElementTree as ET
 import numpy as np
-from scipy.spatial import kdtree
+from scipy.spatial import cKDTree as kdtree
 from scipy.spatial import Delaunay
 from scipy import spatial
-kdtree.node = kdtree.KDTree.node
-kdtree.leafnode = kdtree.KDTree.leafnode
-kdtree.innernode = kdtree.KDTree.innernode
 import itertools as it
 from scipy import spatial
 from scipy.optimize import linear_sum_assignment
@@ -879,7 +875,7 @@ def build_gg(data):
             idx3d: kdtree structure
     '''
     D_graph = Delaunay(data, incremental = True)
-    idx3d = kdtree.KDTree(data)
+    idx3d = kdtree(data)
     delaunay_graph = {}
     for N in D_graph.simplices:
         for e1, e2 in combinations(np.sort(N), 2):
@@ -1035,10 +1031,16 @@ if __name__ == '__main__':
 
     ### Reading of the different lineage trees
     VF_1 = lineageTree(path_1 + 'SVF.bin')
-    LT_1 = lineageTree(path_1 + 'TGMM_clean.bin')
+    if os.path.exists(path_1 + 'TGMM_clean.bin'):
+        LT_1 = lineageTree(path_1 + 'TGMM_clean.bin')
+    else:
+        LT_1 = lineageTree(path_1 + 'TGMM.bin')
 
     VF_2 = lineageTree(path_2 + 'SVF.bin')
-    LT_2 = lineageTree(path_2 + 'TGMM_clean.bin')
+    if os.path.exists(path_2 + 'TGMM_clean.bin'):
+        LT_2 = lineageTree(path_2 + 'TGMM_clean.bin')
+    else:
+        LT_2 = lineageTree(path_2 + 'TGMM.bin')
 
     ### Reading the landmarks
     f = pd.read_csv(TARDIS_folder_1 + csv_file_name_1)
@@ -1469,14 +1471,10 @@ if __name__ == '__main__':
     R = 500
     nb_std = 1
     percentile = 80
-    from itertools import product
-    from time import time
     VF_2.final_pos = {}
-    mapping = [(t, static_barycenter[t]) for t in sorted(LT_2.new_time_nodes.keys())]
+    for t in sorted(LT_2.new_time_nodes.keys()):
+        build_points(t, static_barycenter[t])
 
-
-    from itertools import product
-    from time import time
     VF_2.final_pos = {}
     LT_2.new_time_nodes.keys()
     mapping = sorted(LT_2.new_time_nodes.keys())

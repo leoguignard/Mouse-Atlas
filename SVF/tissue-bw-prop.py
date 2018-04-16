@@ -145,7 +145,10 @@ def read_param_file():
                 name = param_name
                 out = []
                 while (name == param_name or param_name == '') and  i < nb_lines:
-                    out += [int(split_line[1])]
+                    if split_line[1].isdigit():
+                        out += [int(split_line[1])]
+                    else:
+                        out += [float(split_line[1])]
                     i += 1
                     if i < nb_lines:
                         l = lines[i]
@@ -175,12 +178,16 @@ def read_param_file():
         path_out_am = param_dict.get('path_to_am', '.')
         labels = param_dict.get('labels', [])
         DS = param_dict.get('downsampling', [])
+        ani = np.float(param_dict.get('anisotropy', 1.))
         path_DB = param_dict.get('path_DB', '.')
         path_div = param_dict.get('path_div', None)
         path_bary = param_dict.get('path_bary', None)
         label_names = param_dict.get('label_names', None)
+        invert = param_dict.get('invert', '1') != '0'
 
-    return (path_LT, path_VF, path_mask, t, path_out_am, labels, DS, path_DB, path_div, path_bary, label_names)
+    return (path_LT, path_VF, path_mask, t, path_out_am,
+            labels, DS, path_DB, path_div, path_bary,
+            label_names, ani, invert)
 
 def get_division_mapping(path_div, VF):
     ''' Computes the mapping between found divisions and SVF objects
@@ -276,7 +283,9 @@ def get_barycenter(fname, tb, te):
 
 
 if __name__ == '__main__':
-    path_LT, path_VF, path_mask, t, path_out_am, labels, DS, path_DB, path_div, path_bary, label_names = read_param_file()
+    (path_LT, path_VF, path_mask, t, path_out_am,
+     labels, DS, path_DB, path_div, path_bary,
+     label_names, ani, invert) = read_param_file()
     if not os.path.exists(path_out_am):
         os.makedirs(path_out_am)
     if not os.path.exists('mask_images/'):
@@ -310,11 +319,14 @@ if __name__ == '__main__':
     x_max, y_max, z_max = 0, 0, 0
 
     for i, path_mask in enumerate(masks):
-        mask = imread(path_mask).transpose(1, 0, 2)
-        mask = mask[:,::-1,:]
+        if invert:
+            mask = imread(path_mask).transpose(1, 0, 2)
+            mask = mask[:,::-1,:]
+        else:
+            mask = imread(path_mask)
         max_vals = np.array(mask.shape) - 1
         for c in VF.time_nodes[t]:
-            pos_rounded = np.floor(VF.pos[c]/(np.array([1, 1, 5])*DS)).astype(np.int)
+            pos_rounded = np.floor(VF.pos[c]/(np.array(DS)*[1.,1.,ani])).astype(np.int)
             pos_rounded = tuple(np.min([max_vals, pos_rounded], axis = 0))
             if mask[pos_rounded]:
                 init_cells[i].add(c)

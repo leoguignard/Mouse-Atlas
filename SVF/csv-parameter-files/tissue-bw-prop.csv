@@ -1,8 +1,8 @@
-path_to_LT,/media/X/SV1/14-05-21/Propagation/TGMM_clean.bin,Path to the TGMM binary file
-path_to_VF,/media/X/SV1/14-05-21/Propagation/SVF.bin,Path to the SVF binary file
-path_to_mask,/media/X/SV1/14-05-21/Propagation/140521_TP520_AllLabels_DS.tif,path to the image mask containing the tissue masks
+path_to_LT,/path/to/TGMM.bin,Path to the TGMM binary file
+path_to_VF,/path/to/SVF.bin,Path to the SVF binary file
+path_to_mask,/path/to/140521_TP520_AllLabels_DS.tif,path to the image mask containing the tissue masks
 time,520,Time at which the tissues has been labeled
-path_to_am,/media/X/SV1/14-05-21/Propagation/am_output_with_prop_woEndoderm,Path to the future amira output
+path_to_am,/path/to/amira/output,Path to the future amira output
 labels,250,Values of the labels in the mask image
 ,220,
 ,200,
@@ -28,6 +28,8 @@ label_names,Neural Tube,Name for the different labels
 downsampling,4,"Prior downsampling of the image (if any, necessary if the mask is a tiff file that would weight more that 2Gb)"
 ,4,
 ,1,
-path_DB,/media/X/SV1/14-05-21/Propagation/,Path to the output database
-path_div,/media/X/SV1/14-05-21/DivisionDetection/Predictions-corrected.csv,"Path to the division file, can be left empty"
-path_bary,/media/X/SV1/14-05-21/Propagation/barycenters_manual.csv,"Path to the barycenter file, can be left empty"
+inverted,1,1 if the mask image have been rotated by 90 degrees (sometimes important to better assess the geometry of the embryo)
+ani,5.,"Anisotropy of the image data, necessary in order to correctly match the image data and the SVF results"
+path_DB,/path/to/Propagation/,Path to the output database
+path_div,/path/to/Predictions-corrected.csv,"Path to the division file, can be left empty"
+path_bary,/path/to/barycenters_manual.csv,"Path to the barycenter file, can be left empty"
