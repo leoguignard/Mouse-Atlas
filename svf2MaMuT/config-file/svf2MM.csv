@@ -1,15 +1,31 @@
-path_to_SVF,/media/X/SV1/14-05-21/Propagation/SVF.bin
-path_to_DB,/media/X/SV1/14-05-21/Propagation/Database.csv
-path_output,/media/X/SV1/14-05-21/Propagation/MaMuT/14-05-21.xml
-tissue_ids,0
-,1
-,2
-tissue_names,Heart
-,Left Ant Parax
-,Left LP
-filename,Shifted.xml
-folder,X:\SV1\14-05-21\ParameterSweep2
-begin,11
-end,521
-v_size,0.40625
-dT,5
+path_to_SVF,/path/to/SVF.bin,path to the SVF binary file
+path_to_DB,/path/to/Database.csv,path to the database created by tissue_bw_prop.py
+path_output,/path/to/MaMuT/output/MaMuT_output.xml,path to the output
+tissue_ids,0,list of tissues that will be outputed in the MaMuT file
+,1,
+,2,
+,3,
+,4,
+,5,
+,6,
+,7,
+,8,
+,9,
+,10,
+tissue_names,Heart,mapping of the names of the tissues to the list of tissue ids from above
+,Left Ant Parax,
+,Left LP,
+,Left Somat,
+,Left Somite,
+,Neural Tube,
+,Notochord,
+,Right Ant Parax,
+,Right LP,
+,Right Somat,
+,Right Somite,
+filename,ZeroKLBSmall.xml,name of the big data viewer xml config file
+folder,/path/to/DATA/,path to the folder containing the big data viewer xml config file
+begin,11,first time point to take into account
+end,521,last time point to take into account
+v_size,0.40625,voxel size in physical units (here in microns for example)
+dT,5,time resolution in physical units (here in minutes for example)
