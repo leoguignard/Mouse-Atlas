@@ -1057,6 +1057,45 @@ def stabilize_point_cloud(SVF):
     new_pos.update({c:SVF.pos[c] for c in cells})
     return new_pos
 
+def get_spherical_coordinates(x, y, z):
+    ''' Computes spherical coordinates for an x, y, z Cartesian position
+    '''
+    r = np.linalg.norm([x, y, z])
+    theta = np.arctan2(y, x)
+    phi = np.arccos(z/r)
+    alpha = (np.pi/2 + np.arctan2(x, z)) % (2*np.pi)
+    return r, theta, phi, alpha
+
+def write_DB(path_DB, path_div, VF, barycenters, tracking_value, tb, te):
+    ''' Write the csv database in Database.csv
+        Args:
+            path_DB: string, path to the output database
+            VF: lineageTree
+            tracking_value: {int: int, }, dictionary that maps an object id to a label
+            tb: int, first time point to write
+            te: int, last time point to write
+    '''
+    f2 = open(path_DB + 'Database.csv', 'w')
+    f2.write('id, mother_id, x, y, z, r, theta, phi, t, label, D-x, D-y, D-z, D-r, D-theta, D-phi\n')
+    for t in range(tb, te+1):
+        for c in VF.time_nodes[t]:
+            S_p = (-1, -1, -1)
+            if VF.predecessor.get(c, []) != []:
+                M_id = VF.predecessor[c][0]
+            else:
+                M_id = -1
+            P = tuple(VF.pos[c])
+            S_p = tuple(get_spherical_coordinates(*(barycenters[t] - VF.pos[c]))[:-1])
+            L = tracking_value.get(c, -1)
+            D_P = tuple(ass_div.get(c, [-1, -1, -1]))
+            D_S_p = (-1, -1, -1) if not c in ass_div else tuple(get_spherical_coordinates(*(barycenters[t] - ass_div[c]))[:-1])
+            else:
+                D_S_p = (-1, -1, -1)
+            f2.write(('%d, %d, %.5f, %.5f, %.5f, %.5f, %.5f, %.5f, %d, %d,' + 
+                      '%.5f, %.5f, %.5f, %.5f, %.5f, %.5f\n')%((c, M_id) + P + S_p + (t, L) + D_P + D_S_p))
+    f2.close()
+
+
 def read_param_file():
     ''' Asks for, reads and formats the parameter file
     '''
@@ -1079,7 +1118,7 @@ def read_param_file():
             l = lines[i]
             split_line = l.split(',')
             param_name = split_line[0]
-            if param_name in ['bary', 'DS_mask']:
+            if param_name in ['bary', 'DS_mask', 'labels']:
                 name = param_name
                 out = []
                 while (name == param_name or param_name == '') and  i < nb_lines:
@@ -1104,18 +1143,18 @@ def read_param_file():
         match_points_folder = param_dict.get('match_points_folder', '.')
         folder_SVF_amira = param_dict.get('folder_SVF_amira', '.')
         t_ref = int(param_dict.get('t_ref', 0))
-        label = int(param_dict.get('label', 0))
+        labels = int(param_dict.get('labels', [0]))
         bary = np.array(param_dict.get('bary', [0, 0, 0]))
         transpose = int(param_dict.get('transpose_mask', 0))!=0
         DS_mask = np.array(param_dict.get('DS_mask', [1, 1, 1]))
 
     return (path_avg_TGMM, path_avg_SVF, path_ref_TGMM, path_avg_LM, path_ref_LM,
-            match_points_folder, folder_SVF_amira, t_ref, label, bary, path_mask, transpose, DS_mask)
+            match_points_folder, folder_SVF_amira, t_ref, labels, bary, path_mask, transpose, DS_mask)
 
 if __name__ == '__main__':
     (path_avg_TGMM, path_avg_SVF, path_ref_TGMM, path_avg_LM,
         path_ref_LM, match_points_folder, folder_SVF_amira,
-        t_ref, label, bary, path_mask, transpose, DS_mask) = read_param_file()
+        t_ref, labels, bary, path_mask, transpose, DS_mask) = read_param_file()
 
     ### Preparation of the necessary folders
     ### TO DO ###
@@ -1288,33 +1327,82 @@ if __name__ == '__main__':
     final_pos = apply_trsf(t_ref)
 
     ### Reading of the mask
-    ref_mask = imread(path_mask)
-    masked_im = ref_mask == label
-    tmp = nd.binary_opening(masked_im, iterations = 3)
-    if transpose:
-        mask = nd.binary_closing(tmp, iterations = 4)[::-1,:,:].transpose(1, 0, 2)
-    else:
-        mask = nd.binary_closing(tmp, iterations = 4)
-    # mask[:,:,450:] = False
+    mask_dir = 'mask_images_tmp/'
+    if not os.path.exists(mask_dir):
+        os.makedirs(mask_dir)
+    im = imread(path_mask)
+    for l in labels:
+        masked_im = im == l
+        tmp = nd.binary_opening(masked_im, iterations = 3)
+        tmp = nd.binary_closing(tmp, iterations = 4)
+        imsave(mask_dir + '%03d.tif'%l, SpatialImage(tmp).astype(np.uint8))
 
-    positive = set()
-    positive_pos = set()
-    im_shape = mask.shape
-    for c, p in final_pos.iteritems():
-        pos_in_vox = tuple(np.round(p/DS_mask).astype(np.int))
-        pos_in_vox = tuple(max(min(v, im_shape[i]-1), 0) for i, v in enumerate(pos_in_vox))
-        if mask[pos_in_vox]:
-            positive.add(c)
-            positive_pos.add(tuple(p))
+    masks = [mask_dir + '%03d.tif'%l for l in labels]
 
-    positive_dict = {}
-    for c in positive:
-        track = [c]
-        while track[-1] in avg_SVF.successor:
-            track += avg_SVF.successor[track[-1]]
-        while track[0] in avg_SVF.predecessor:
-            track.insert(0, avg_SVF.predecessor[track[0]][0])
-        positive_dict.update({k:1 for k in track})
+    init_cells = {m: set() for m in range(len(masks))}
+
+    for i, path_mask in enumerate(masks):
+        if transpose:
+            mask = imread(path_mask).transpose(1, 0, 2)
+            mask = mask[:,::-1,:]
+        else:
+            mask = imread(path_mask)
+        im_shape = mask.shape
+        for c, p in final_pos.iteritems():
+            pos_in_vox = np.round(p/DS_mask).astype(np.int)
+            pos_in_vox = tuple(max(min(v, im_shape[i]-1), 0) for i, v in enumerate(pos_in_vox))
+            if mask[pos_in_vox]:
+                init_cells[i].add(c)
+
+    tracking_value = {}
+    for t, cs in init_cells.iteritems():
+        for c in cs:
+            to_treat = [c]
+            tracking_value.setdefault(c, set()).add(t)
+            while to_treat != []:
+                c_tmp = to_treat.pop()
+                next_cells = avg_SVF.successor.get(c_tmp, [])
+                to_treat += next_cells
+                for n in next_cells:
+                    tracking_value.setdefault(n, set()).add(t)
+            to_treat = [c]
+            tracking_value.setdefault(c, set()).add(t)
+            while to_treat != []:
+                c_tmp = to_treat.pop()
+                next_cells = avg_SVF.predecessor.get(c_tmp, [])
+                to_treat += next_cells
+                for n in next_cells:
+                    tracking_value.setdefault(n, set()).add(t)
+
+    tracking_value = {k:np.sum(list(v)) for k, v in tracking_value.iteritems() if len(v) == 1}
+
+    # ref_mask = imread(path_mask)
+    # masked_im = ref_mask == label
+    # tmp = nd.binary_opening(masked_im, iterations = 3)
+    # if transpose:
+    #     mask = nd.binary_closing(tmp, iterations = 4)[::-1,:,:].transpose(1, 0, 2)
+    # else:
+    #     mask = nd.binary_closing(tmp, iterations = 4)
+    # # mask[:,:,450:] = False
+
+    # positive = set()
+    # positive_pos = set()
+    # im_shape = mask.shape
+    # for c, p in final_pos.iteritems():
+    #     pos_in_vox = tuple(np.round(p/DS_mask).astype(np.int))
+    #     pos_in_vox = tuple(max(min(v, im_shape[i]-1), 0) for i, v in enumerate(pos_in_vox))
+    #     if mask[pos_in_vox]:
+    #         positive.add(c)
+    #         positive_pos.add(tuple(p))
+
+    # positive_dict = {}
+    # for c in positive:
+    #     track = [c]
+    #     while track[-1] in avg_SVF.successor:
+    #         track += avg_SVF.successor[track[-1]]
+    #     while track[0] in avg_SVF.predecessor:
+    #         track.insert(0, avg_SVF.predecessor[track[0]][0])
+    #     positive_dict.update({k:1 for k in track})
 
     new_pos = stabilize_point_cloud(avg_SVF)
 
